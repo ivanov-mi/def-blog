@@ -1,6 +1,6 @@
 from rest_framework.exceptions import ValidationError
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import User
+from .models import CustomUser
 
 # Create your views here.
 from rest_framework.views import APIView
@@ -21,8 +21,8 @@ class LoginView(APIView):
                     "detail": "User Does not exist!"
                 }
             }
-            if User.objects.filter(username=request.data['username']).exists():
-                user = User.objects.get(username=request.data['username'])
+            if CustomUser.objects.filter(username=request.data['username']).exists():
+                user = CustomUser.objects.get(username=request.data['username'])
                 token, created = Token.objects.get_or_create(user=user)
                 response = {
                     'success': True,
@@ -41,7 +41,7 @@ class CreateUserView(APIView):
             response = {
                 'success': True,
                 'user': serializer.data,
-                'token': Token.objects.get(user=User.objects.get(username=serializer.data['username'])).key
+                'token': Token.objects.get(user=CustomUser.objects.get(username=serializer.data['username'])).key
             }
             return Response(response, status=status.HTTP_200_OK)
         raise ValidationError(serializer.errors, code=status.HTTP_406_NOT_ACCEPTABLE)
