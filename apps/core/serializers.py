@@ -9,6 +9,7 @@ class HashtagSerializer(serializers.ModelSerializer):
         model = Hashtag
         fields = ['id', 'name']
 
+
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
     post_id = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all(), source='post')
@@ -16,6 +17,7 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'content', 'post_id', 'author', 'date_created']
+
 
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
@@ -32,6 +34,23 @@ class PostSerializer(serializers.ModelSerializer):
         if len(hashtags) > 10:
             raise serializers.ValidationError('Maximum allowed number of hashtags is 10.')
         return text
+
+
+class PostDetailsCommentSerializer(CommentSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'content', 'author', 'date_created']
+
+
+class PostDetailsSerializer(serializers.ModelSerializer):
+    author = serializers.ReadOnlyField(source='author.username')
+    rating = serializers.ReadOnlyField()
+    hashtags = HashtagSerializer(many=True, read_only=True)
+    comments = PostDetailsCommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Post
+        fields = ['id', 'title', 'content', 'date_posted', 'rating', 'author', 'comments', 'hashtags']
 
 
 class VoteSerializer(serializers.ModelSerializer):
