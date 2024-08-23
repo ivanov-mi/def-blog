@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Post, Comment, Hashtag, Vote
 from .utils import get_hashtags
 from django.utils.timezone import now
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class HashtagSerializer(serializers.ModelSerializer):
@@ -61,13 +62,11 @@ class VoteSerializer(serializers.ModelSerializer):
         model = Vote
         fields = ['id', 'author', 'post_id', 'is_liked', 'date_created']
 
-    def create(self, validated_data):
-        vote, created = Vote.objects.get_or_create(
-            author=validated_data['author'],
-            post=validated_data['post']
-        )
+    def validate(self, data):
+        author = self.context.get('request').user
+        post = data.get('post')
 
-        vote.date_created = now()
-        vote.is_liked = validated_data['is_liked']
+        if Vote.objects.filter(author=author, post=post).exists():
+            raise serializers.ValidationError('You have already voted for this post. Users are allowed to vote only once for a single post.')
 
-        return vote
+        return data
