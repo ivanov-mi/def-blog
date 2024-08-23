@@ -1,17 +1,25 @@
 from rest_framework.decorators import action
 from rest_framework import mixins, viewsets
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.filters import OrderingFilter, SearchFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from .models import Post, Comment, Hashtag, Vote
 from .serializers import PostSerializer, CommentSerializer, HashtagSerializer, VoteSerializer, PostDetailsSerializer
-from rest_framework.pagination import PageNumberPagination
 from .decorators import paginate
+from .filters import PostFilter
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     pagination_class = PageNumberPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_class = PostFilter
+    ordering_fields = ['date_posted']
+    ordering = ['-date_posted']
+    search_fields = ['title', 'hashtags__name']
 
     def retrieve(self, request, pk=None):
         queryset = Post.objects.all()
