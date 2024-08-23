@@ -27,6 +27,9 @@ class PostViewSet(viewsets.ModelViewSet):
         serializer = PostDetailsSerializer(post)
         return Response(serializer.data)
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
     @paginate(CommentSerializer)
     @action(detail=True, methods=['get'])
     def comments(self, request, *args, **kwargs):
@@ -39,6 +42,9 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
 
 class HashtagViewSet(mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Hashtag.objects.all()
@@ -48,3 +54,6 @@ class HashtagViewSet(mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.G
 class VoteViewSet(mixins.ListModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
