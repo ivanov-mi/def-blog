@@ -9,12 +9,14 @@ from .models import Post, Comment, Hashtag, Vote
 from .serializers import PostSerializer, CommentSerializer, HashtagSerializer, VoteSerializer, PostDetailsSerializer
 from .decorators import paginate
 from .filters import PostFilter
+from .permissions import IsOwnerOrAdminOrReadOnly, CommentsCustomPermission, VotesCustomPermissions, HashtagsCustomPermissions
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     pagination_class = PageNumberPagination
+    permission_classes = [IsOwnerOrAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     filterset_class = PostFilter
     ordering_fields = ['date_posted']
@@ -41,6 +43,7 @@ class PostViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = [CommentsCustomPermission]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -49,11 +52,13 @@ class CommentViewSet(viewsets.ModelViewSet):
 class HashtagViewSet(mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Hashtag.objects.all()
     serializer_class = HashtagSerializer
+    permission_classes = [HashtagsCustomPermissions]
 
 
 class VoteViewSet(mixins.ListModelMixin, mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = Vote.objects.all()
     serializer_class = VoteSerializer
+    permission_classes = [VotesCustomPermissions]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
