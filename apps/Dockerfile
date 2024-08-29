@@ -1,5 +1,5 @@
 # setting up base image
-FROM python:3.12
+FROM python:3.12-alpine
 
 # prevents python buffering stdout and stderr
 ENV PYTHONUNBUFFERED 1

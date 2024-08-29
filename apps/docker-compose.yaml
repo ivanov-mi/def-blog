@@ -1,24 +1,33 @@
 services:
-  web:
+  backend:
     build:
       context: .
-    container_name: web
+    container_name: django-api
     ports:
       - 8000:8000
     command: ["sh", "./start.sh"]
     env_file:
       - .env
     depends_on:
-      - postgres_db
+      database:
+        condition: service_healthy
+        restart: true
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
 
-  postgres_db:
+  database:
     image: postgres
+    container_name: postgres-db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
     env_file:
       - .env
     ports:
